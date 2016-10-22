@@ -5,7 +5,8 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 import os
-import cx_Oracle
+import pymysql
+
 from urllib import request
 
 #数据库连接
@@ -13,25 +14,29 @@ source_ora_conn = ''
 sina_page_num = ''
 sina_page_list = ''
 
-def get_source():
-    Source_file = os.getcwd()+"\Source.xml"
+def get_stocklist():
+    Source_file = os.getcwd()+"\Sourcefile\Source.xml"
+    source_mysql_host = ''
+    source_mysql_username = ''
+    source_mysql_password = ''
+    source_mysql_db = '';
+    source
+    sina_page_num = ''
+    sina_page_list = ''
+    print(Source_file)
+    pymysql.connect
     try:
         for event, elem in ET.iterparse(Source_file):            # reads a xml file
             tag_name = elem.tag
             if event == 'end':
-                if tag_name == 'oracle_conn01':  self.source_ora_conn = elem.text if elem.text is not None else Exception("Can't get the connection of oracle")
-                elif tag_name == 'stock_pagenum':self.sina_page_num = elem.text if elem.text is not None else Exception("Can't get the count of page")
-                elif tag_name == 'stock_list':   self.sina_page_list = elem.text if elem.text is not None else Exception("Can't get the list of the stock")
-        print(self.source_ora_conn)
-        print(self.source_ora_conn)
-        print(self.source_ora_conn)
+                if tag_name == 'oracle_conn01':  source_ora_conn = elem.text if elem.text is not None else Exception("Can't get the connection of oracle")
+                elif tag_name == 'stock_pagenum':sina_page_num = elem.text if elem.text is not None else Exception("Can't get the count of page")
+                elif tag_name == 'stock_list':   sina_page_list = elem.text if elem.text is not None else Exception("Can't get the list of the stock")
     except Exception as e:
         print(e)
-def get_stocklist():
-    # oracle conn
     conn = cx_Oracle.connect('jack/jack@localhost/JACK')
     cursor = conn.cursor ()
-    response = request.urlopen("http://hqdigi2.eastmoney.com/EM_Quote2010NumericApplication/index.aspx?type=s&sortType=C&sortRule=-1&pageSize=20&page=1&jsName=quote_123&style=33")
+    response = request.urlopen(sina_page_num)
     content = response.read().decode('utf-8').replace('"',',')
     count = len(content)
     start_count = content.find('pages:' )+6
@@ -56,7 +61,7 @@ def get_stocklist():
                             "low_values,"
                             "turnover_value,"
                             "turnover,"
-                            "pricechangeratio_value,"
+                            "pricechange_value,"
                             "pricechangeratio,"
                             "average_price,"
                             "amplitude,"
