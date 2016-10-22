@@ -1,6 +1,13 @@
 <root>
 	<DB_conn>
 		<oracle_conn01>jack/jack@localhost/JACK</oracle_conn01>
+		<mysql_conn01>
+			<my01_hostname>localhost</my01_hostname>
+			<my01_username>jack</my01_username>
+			<my01_password>jack</my01_password>
+			<my01_db>sina_stock</my01_db>
+			<my01_port>3306</my01_port>
+		</mysql_conn01>
 	</DB_conn>
 	<sina_stock_url>
 		<stock_pagenum>http://hqdigi2.eastmoney.com/EM_Quote2010NumericApplication/index.aspx?type=s&amp;sortType=C&amp;sortRule=-1&amp;pageSize=20&amp;page=1&amp;jsName=quote_123&amp;style=33</stock_pagenum>
