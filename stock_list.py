@@ -5,14 +5,9 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 import os
+import time
 import pymysql
-
 from urllib import request
-
-#数据库连接
-source_ora_conn = ''
-sina_page_num = ''
-sina_page_list = ''
 
 def get_stocklist():
     Source_file = os.getcwd()+"\Sourcefile\Source.xml"
@@ -20,22 +15,28 @@ def get_stocklist():
     source_mysql_username = ''
     source_mysql_password = ''
     source_mysql_db = '';
-    source
+    source_mysql_port = '';
     sina_page_num = ''
     sina_page_list = ''
-    print(Source_file)
-    pymysql.connect
-    try:
-        for event, elem in ET.iterparse(Source_file):            # reads a xml file
-            tag_name = elem.tag
-            if event == 'end':
-                if tag_name == 'oracle_conn01':  source_ora_conn = elem.text if elem.text is not None else Exception("Can't get the connection of oracle")
-                elif tag_name == 'stock_pagenum':sina_page_num = elem.text if elem.text is not None else Exception("Can't get the count of page")
-                elif tag_name == 'stock_list':   sina_page_list = elem.text if elem.text is not None else Exception("Can't get the list of the stock")
-    except Exception as e:
-        print(e)
-    conn = cx_Oracle.connect('jack/jack@localhost/JACK')
-    cursor = conn.cursor ()
+    stock_values=[]
+    key_time = str(time.strftime("%Y-%m-%d %H:%M:%S"))
+    ins_list_sql = "INSERT INTO T_PY_STOCKLIST (eastmoney_code,stock_code,stock_name,yes_values,open_values,new_values," \
+                   "high_values,low_values,turnover_value,turnover,pricechange_value,pricechange_ratio,average_price," \
+                   "amplitude,weibi,INSERT_DATE)VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+#    try:
+    for event, elem in ET.iterparse(Source_file):            # reads a xml file
+        tag_name = elem.tag
+        if event == 'end':
+            if tag_name == 'my01_hostname':  source_mysql_host = elem.text if elem.text is not None else Exception("Can't get the hostname of mysql")
+            elif tag_name == 'my01_username':source_mysql_username = elem.text if elem.text is not None else Exception("Can't get the username of mysql")
+            elif tag_name == 'my01_password':source_mysql_password = elem.text if elem.text is not None else Exception("Can't get the password of mysql")
+            elif tag_name == 'my01_db':source_mysql_db = elem.text if elem.text is not None else Exception("Can't get the db name of mysql")
+            elif tag_name == 'my01_port':source_mysql_port = elem.text if elem.text is not None else Exception("Can't get the port of mysql")
+            elif tag_name == 'stock_pagenum':sina_page_num = elem.text if elem.text is not None else Exception("Can't get the count of page")
+            elif tag_name == 'stock_list':   sina_page_list = elem.text if elem.text is not None else Exception("Can't get the list of the stock")
+    print(source_mysql_host,source_mysql_username,source_mysql_password,source_mysql_db,source_mysql_port,sina_page_num,sina_page_list)
+    conn= pymysql.connect(host=source_mysql_host, port=int(source_mysql_port), user=source_mysql_username, passwd=source_mysql_password,db = source_mysql_db, charset='UTF8')
+    sto_cursor = conn.cursor()
     response = request.urlopen(sina_page_num)
     content = response.read().decode('utf-8').replace('"',',')
     count = len(content)
@@ -44,40 +45,24 @@ def get_stocklist():
     pages_start = 1
     while pages_start< pages_count:
         i = 1;
-        sub_response = request.urlopen("http://hqdigi2.eastmoney.com/EM_Quote2010NumericApplication/index.aspx?type=s&sortType=C&sortRule=-1&pageSize=20&page="+str(pages_start)+"&jsName=quote_123&style=33")
+        sub_response = request.urlopen(sina_page_list % str(pages_start))
+        print(sina_page_list % str(pages_start))
         sub_content = sub_response.read().decode('utf-8').replace('"',',')
         stock_list = sub_content.split(',')
         col_count = len(stock_list)
         while i< col_count:
-            cursor.execute ("INSERT INTO T_PY_STOCKLIST "
-                            "("
-                            "eastmoney_code,"
-                            "stock_code,"
-                            "stock_name,"
-                            "yes_values,"
-                            "open_values,"
-                            "new_values,"
-                            "high_values,"
-                            "low_values,"
-                            "turnover_value,"
-                            "turnover,"
-                            "pricechange_value,"
-                            "pricechangeratio,"
-                            "average_price,"
-                            "amplitude,"
-                            "weibi,"
-                            "INSERT_DATE"
-                            ")"
-                            "VALUES("+
-                                 "'"+stock_list[i]+"'"+",'"+stock_list[i+1]+"'"+",'"+stock_list[i+2]+"'"
-                                +','+stock_list[i+3] +','+stock_list[i+4] +','+stock_list[i+5]
-                                +','+stock_list[i+6] +','+stock_list[i+7] +','+stock_list[i+8]
-                                +','+stock_list[i+9] +','+stock_list[i+10]+",'"+stock_list[i+11]+"'"
-                                +','+stock_list[i+12]+",'"+stock_list[i+13]+"'"+",'"+stock_list[i+14]+"'"
-                                +','+"sysdate"
-                            +")")
+            stock_values.append((stock_list[i],stock_list[i+1],stock_list[i+2],stock_list[i+3] ,stock_list[i+4] ,
+                                stock_list[i+5],stock_list[i+6] ,stock_list[i+7] ,stock_list[i+8],stock_list[i+9] ,
+                                stock_list[i+10],stock_list[i+11],stock_list[i+12],stock_list[i+13],stock_list[i+14],
+                                key_time))
+
             i = i+35
         pages_start = pages_start+1
+    sto_cursor.executemany(ins_list_sql,stock_values)
     conn.commit()
-    cursor.close ()
-get_source();
+    sto_cursor.close()
+    conn.close()
+#    except Exception as e:
+#        print(e)
+
+get_stocklist()
