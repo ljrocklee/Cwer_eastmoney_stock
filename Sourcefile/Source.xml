@@ -1,12 +1,12 @@
 <root>
 	<DB_conn>
-		<oracle_conn01>oracle连接串</oracle_conn01>
+		<oracle_conn01>oracle连接字符串</oracle_conn01>
 		<mysql_conn01>
-			<my01_hostname>IP地址</my01_hostname>
+			<my01_hostname>ip地址</my01_hostname>
 			<my01_username>用户名</my01_username>
 			<my01_password>密码</my01_password>
 			<my01_db>数据库名</my01_db>
-			<my01_port>端口</my01_port>
+			<my01_port>端口号</my01_port>
 		</mysql_conn01>
 	</DB_conn>
 	<sina_stock_url>
